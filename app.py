@@ -13,9 +13,9 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 # Constants
-MAX_SCROLL_ITERATIONS = 30
-SCROLL_PAUSE_TIME = 0.3
-STABILITY_THRESHOLD = 2
+MAX_SCROLL_ITERATIONS = 40
+SCROLL_PAUSE_TIME = 0.8
+STABILITY_THRESHOLD = 4
 MESSAGE_BODY_PREFIX = "message-body-"
 CONTENT_PREFIX = "content-"
 
