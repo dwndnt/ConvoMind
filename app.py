@@ -103,21 +103,19 @@ def extract_messages() -> Tuple[Optional[pd.DataFrame], Optional[str]]:
             if content_groups:
                 content = content_groups[0].element_info.name or ""
                 sender = "Unknown"
-                
-                # Remove timestamp/date info from the end of outer_name
-                base_text = re.sub(r'(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),?\s+\d{1,2}.*$', '', outer_name).strip()
-                if not base_text:
-                    base_text = outer_name
-
-                if content and base_text.startswith(content):
-                    remainder = base_text[len(content):].strip().rstrip(',')
-                    if remainder:
-                        sender = remainder
-                elif content and content in base_text:
-                    idx = base_text.find(content)
-                    remainder = base_text[idx + len(content):].strip().rstrip(',')
-                    if remainder:
-                        sender = remainder
+                if content and content in outer_name:
+                    parts = outer_name.split(content)
+                    # 1. Group Chat pattern: Sender name is before content
+                    if len(parts) > 1 and parts[0].strip():
+                        sender_cand = parts[0].strip().rstrip(',')
+                        if len(sender_cand) < 50:
+                            sender = sender_cand
+                    # 2. Personal Chat pattern: Sender name is after content
+                    if sender == "Unknown" and len(parts) > 1 and parts[1].strip():
+                        remainder = parts[1].strip()
+                        sender_part = re.sub(r'(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday).*$', '', remainder).strip().rstrip(',')
+                        if sender_part:
+                            sender = sender_part
             else:
                 content = outer_name
                 sender = "System / Notification"
