@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import time
 from typing import Any, Optional, Tuple
 import pandas as pd
@@ -102,8 +103,18 @@ def extract_messages() -> Tuple[Optional[pd.DataFrame], Optional[str]]:
             if content_groups:
                 content = content_groups[0].element_info.name or ""
                 sender = "Unknown"
-                if content and content in outer_name:
-                    sender = outer_name.split(content)[0].strip().rstrip(",")
+                if content and outer_name.startswith(content):
+                    remainder = outer_name[len(content):].strip()
+                    sender_part = re.sub(r'(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday).*$', '', remainder).strip().rstrip(',')
+                    if sender_part:
+                        sender = sender_part
+                elif content and content in outer_name:
+                    parts = outer_name.split(content)
+                    if len(parts) > 1:
+                        remainder = parts[1].strip()
+                        sender_part = re.sub(r'(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday).*$', '', remainder).strip().rstrip(',')
+                        if sender_part:
+                            sender = sender_part
             else:
                 content = outer_name
                 sender = "System / Notification"
