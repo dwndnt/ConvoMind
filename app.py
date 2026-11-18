@@ -103,18 +103,21 @@ def extract_messages() -> Tuple[Optional[pd.DataFrame], Optional[str]]:
             if content_groups:
                 content = content_groups[0].element_info.name or ""
                 sender = "Unknown"
-                if content and outer_name.startswith(content):
-                    remainder = outer_name[len(content):].strip()
-                    sender_part = re.sub(r'(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday).*$', '', remainder).strip().rstrip(',')
-                    if sender_part:
-                        sender = sender_part
-                elif content and content in outer_name:
-                    parts = outer_name.split(content)
-                    if len(parts) > 1:
-                        remainder = parts[1].strip()
-                        sender_part = re.sub(r'(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday).*$', '', remainder).strip().rstrip(',')
-                        if sender_part:
-                            sender = sender_part
+                
+                # Remove timestamp/date info from the end of outer_name
+                base_text = re.sub(r'(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),?\s+\d{1,2}.*$', '', outer_name).strip()
+                if not base_text:
+                    base_text = outer_name
+
+                if content and base_text.startswith(content):
+                    remainder = base_text[len(content):].strip().rstrip(',')
+                    if remainder:
+                        sender = remainder
+                elif content and content in base_text:
+                    idx = base_text.find(content)
+                    remainder = base_text[idx + len(content):].strip().rstrip(',')
+                    if remainder:
+                        sender = remainder
             else:
                 content = outer_name
                 sender = "System / Notification"
